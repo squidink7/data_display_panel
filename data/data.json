@@ -1,0 +1,12 @@
+{
+    "name": "Ubuntu Server",
+
+    "cpu_load": "50%",
+    "cpu_temp": 63,
+
+    "gpu_detected": true,
+    "gpu_load": "32%",
+    "gpu_temp": 45,
+
+    "battery_status": "charging"
+}
