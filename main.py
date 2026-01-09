@@ -11,7 +11,7 @@ def start_server():
 
 #Take data and aggregate it into a single file - data.json
 def data_handler():
-    data = ""
+    data = ""   
     with open('data/data.json') as file:
         data = json.load(file)
 

@@ -1,0 +1,118 @@
+.card_container {
+    width: 100%;
+    height: 90%;
+
+    display: flex;
+    flex-wrap: wrap;
+
+    justify-content: center;
+    align-content: center;
+
+    padding-top: 50px;
+}
+
+.data_card {
+    /*Approximate width of the background image*/
+    width: 483px;
+    height: 366px;    
+    
+    /*Handling child element spacing*/
+    position: relative;
+    padding-right: 20px;
+    padding-bottom: 20px;
+}
+
+/*Name Field*/
+.data_card .name_field {
+    position: absolute;
+    width: 183px;
+    height: 53px;
+    top: 17px;
+    left: 17px;    
+}
+.data_card .name_field p {
+    text-align: center;
+    width: 150px;
+    padding-left: 15px; 
+    margin-top: -35px;
+}
+
+/*Left side icons*/
+.battery_icon {
+    position: absolute;
+    top: 75px;
+    left: 18px;
+}
+.storage_icon {
+    position: absolute;
+    top: 75px;
+    left: 112px;
+}
+.fan_icon {
+    position: absolute;
+    top: 167px;
+    left: 18px;
+}
+.gpu_icon {
+    position: absolute;
+    top: 167px;
+    left: 112px;
+}
+.ram_icon {
+    position: absolute;
+    top: 260px;
+    left: 18px;
+}
+.cpu_icon {
+    position: absolute;
+    top: 260px;
+    left: 112px;
+}
+
+/*Right side data fields*/
+.uptime_data_field {
+    position: absolute;
+    top: 20px;
+    left: 218px;
+}
+.storage_data_field {
+    position: absolute;
+    top: 75px;
+    left: 218px;
+}
+.fan_data_field {
+    position: absolute;
+    top: 130px;
+    left: 218px;
+}
+.gpu_data_field {
+    position: absolute;
+    top: 186px;
+    left: 218px;
+}
+.ram_data_field {
+    position: absolute;
+    top: 242px;
+    left: 218px;
+}
+.cpu_data_field {
+    position: absolute;
+    top: 297px;
+    left: 218px;
+}
+.data_field_paragraph {
+    text-align: left;
+    width: 215px;
+    padding-left: 15px; 
+    margin-top: -35px;
+}
+
+
+/*Temporary*/
+.data_card img{
+    background-color: 1ac095;
+}
+
+p {
+    color: 1ac095;
+}
