@@ -109,8 +109,16 @@
 
 
 /*Temporary*/
-.data_card img{
-    background-color: 1ac095;
+.data_card img {
+    /*Greenish
+    background-color: 1ac095;*/
+
+    /*Yellow
+    background-color: faac06;
+
+    Red
+    background-color: e8253f;
+    */
 }
 
 p {
