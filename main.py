@@ -1,7 +1,10 @@
-import json
+
 import os
 from random import randint
 from time import sleep
+
+import receive_data
+
 
 PORT = 8080
 
@@ -9,24 +12,20 @@ PORT = 8080
 def start_server():
     os.system("start cmd /c python3 server_handler.py")
 
-#Take data and aggregate it into a single file - data.json
-def data_handler():
-    data = ""   
-    with open('data/data.json') as file:
-        data = json.load(file)
+start_server()
 
-        print(data[0][2])
-        data[0][2] = f"{randint(1, 100)}"
-        print(data[0][2])
+counter = 0
+while True:
+    counter += 1
+    sleep(1)
+    receive_data.data_handler()
 
-        
-    with open('data/data.json', 'w') as file:
-        json.dump(data, file, indent=4)
+    if counter > 100:
+        break
+
         
     
 
-start_server()
-data_handler()
 
 
 

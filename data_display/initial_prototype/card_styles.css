@@ -70,7 +70,7 @@
 }
 
 /*Right side data fields*/
-.uptime_data_field {
+.battery_data_field {
     position: absolute;
     top: 20px;
     left: 218px;

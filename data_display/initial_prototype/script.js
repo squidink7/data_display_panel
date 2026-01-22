@@ -6,6 +6,10 @@ window.setInterval(updatePage, 2000);
 const card_container = document.getElementById("card_container");
 const data_path = "http://localhost:8080/data/data.json";
 
+const green = "1ac095";
+const yellow = "faac06";
+const red = "e8253f";
+
 async function updatePage() {
     const data = await getJsonData()
 
@@ -56,36 +60,53 @@ function removeLastCards(current_number, required_number) {
     }
 }
 
+var greens = 0;
+var yellows = 0;
+var reds = 0;
+
+//Colour thresholds for icons that require average values.
+const average = {"yellow": 8, "red": 16};    
+
+//Update the colours and HTML content of data cards based on provided data.
 function updateCardData(card_data) {
     var data_cards = card_container.getElementsByClassName("data_card");
-
-    //Change the colour of the individual elements of each card.
+    
+    
+    
+    //Go through each individual card, and update its HTML data and style.
     for (var i = 0; i < data_cards.length; i++) {
+        //Reset the counters.
+        greens = 0;
+        yellows = 0;
+        reds = 0;
 
-        
-        //Change background colour.
-        const data_card = document.getElementById(i);
-        for (var j = 0; j < data_card.children.length; j++) {
-            /*Children of the card div*/
+        //Get data.
+        const required_data = Object.values(card_data[i]);
+        const data_card = data_cards[i];
+
+        //Get average status elements to restyle later.
+        const background_svg = data_card.children[0];
+        const device_name_svg = data_card.children[1].children[0].children[0];
+
+        //Loop and switch through the child elements of the card, skipping the background.
+        for (var j = 1; j < data_card.children.length; j++) {
             const child_element = data_card.children[j];
-            /*console.log(child_element.id);*/
             
             /*Switch through each of the children*/
             switch (child_element.id) {
-                /*Colour the background image*/
-                case "background_svg":
-                child_element.style.backgroundColor = getNewColour();
-                break;
-
                 /*Colour and change text of left side*/
                 case "left":
                     for (var k = 0; k < child_element.children.length; k++) {
                         const image = child_element.children[k].children[0];
-                        image.style.backgroundColor = getNewColour();
 
+                        if (k > 0) {
+                            image.style.backgroundColor = dataToColour(required_data, child_element.children[k].className);
+                        }
+                        
+                        //Device name text.
                         const text = child_element.children[k].children[1];
                         if (text != null) {
-                            text.innerHTML = text.id;
+                            text.innerHTML = required_data[0];
                         }
                     }
                     break;
@@ -93,11 +114,11 @@ function updateCardData(card_data) {
                 case "right":
                     for (var k = 0; k < child_element.children.length; k++) {
                         const image = child_element.children[k].children[0];
-                        image.style.backgroundColor = getNewColour();
+                        image.style.backgroundColor = dataToColour(required_data, child_element.children[k].className);
 
                         const text = child_element.children[k].children[1];
                         if (text != null) {
-                            text.innerHTML = text.id;
+                            text.innerHTML = dataToText(required_data, child_element.children[k].className);
                         }
                     }
                     break;
@@ -105,6 +126,154 @@ function updateCardData(card_data) {
                     break;
             }
         }
+
+        //Now that everything else has been set, colour the elements that use average values.
+        background_svg.style.backgroundColor = dataToAverageColour();
+        device_name_svg.style.backgroundColor = dataToAverageColour();
+    }
+}
+
+//Arbitrary baseline colour thresholds.
+const system_temp = {"yellow": 60, "red": 80};    //Degrees.
+const system_load = {"yellow": 70, "red": 90};    //Percent.
+const ram_load = {"yellow": 70, "red": 90};       //Percent.
+const fan_speed = {"yellow": 3000, "red": 5000};  //RPM.
+const storage_usage = {"yellow": 30, "red": 10};  //Percent.
+const battery_charge = {"yellow": 30, "red": 10}; //Percent.
+const uptime = {"yellow": 259200, "red": 604800}; //Seconds.
+
+//Check the data against the a above colour thresholds.
+function dataToColour(data, current_element) {
+    switch (current_element) {
+        //Left side.
+        case "battery_icon":
+            //Check the battery status - green if charging.
+            if (data[3] == "Charging") { return green; }
+            //Check the charge of the battery.
+            if (data[2] > battery_charge.yellow) { greens++; return green; }
+            if (data[2] > battery_charge.red) { yellows++; return yellow;  }
+            reds++;
+            return red;
+        case "storage_icon":
+            //Check the remaining storage space as a percentage of the whole drive.
+            var remaining_space = 100 - Math.floor((data[4] / data[5]) * 100);
+            if (remaining_space < storage_usage.red) { reds++; return red; }
+            if (remaining_space < storage_usage.yellow) { yellows++; return yellow; }
+            greens++;
+            return green;
+        case "fan_icon":
+            //Check the speed of the fan against the colour thresholds.
+            if (data[6] > fan_speed.red) { reds++; return red; }
+            if (data[6] > fan_speed.yellow) {yellows++; return yellow; }
+            greens++;
+            return green;
+        case "gpu_icon":
+            //Check the GPU load and temperature, and take the worst outcome.
+            if (data[7] > system_load.red || data[8] > system_temp.red) {
+                reds++;
+                return red;
+            }
+            if (data[7] > system_load.yellow || data[8] > system_temp.yellow) {
+                yellows++;
+                return yellow;
+            }
+            greens++;
+            return green;
+        case "ram_icon":
+            //Check the RAM load.
+            var current_ram_load = Math.floor((data[9] / data[10]) * 100);
+            if (current_ram_load > ram_load.red) { reds++; return red; }
+            if (current_ram_load > ram_load.yellow) {yellows++; return yellow; }
+            greens++;
+            return green;
+        case "cpu_icon":
+            //Check the CPU load and temperature, and take the worst outcome.
+            if (data[11] > system_load.red || data[12] > system_temp.red) {
+                reds++;
+                return red;
+            }
+            if (data[11] > system_load.yellow || data[12] > system_temp.yellow) {
+                yellows++;
+                return yellow;
+            }
+            greens++;
+            return green;
+        //Right side.
+        case "battery_data_field":
+            if (data[3] == "Charging") { return green; }
+            if (data[2] > battery_charge.yellow) { return green; }
+            if (data[2] > battery_charge.red) { return yellow; }
+            return red;
+        case "storage_data_field":
+            //Check the remaining storage space as a percentage of the whole drive.
+            var remaining_space = 100 - Math.floor((data[4] / data[5]) * 100);
+            if (remaining_space < storage_usage.red) { return red; }
+            if (remaining_space < storage_usage.yellow) { return yellow; }
+            return green;
+        case "fan_data_field":
+            //Check the speed of the fan against the colour thresholds.
+            if (data[6] > fan_speed.red) { return red; }
+            if (data[6] > fan_speed.yellow) { return yellow; }
+            return green;
+        case "gpu_data_field":
+            //Check the GPU load and temperature, and take the worst outcome.
+            if (data[7] > system_load.red || data[8] > system_temp.red) {
+                return red;
+            }
+            if (data[7] > system_load.yellow || data[8] > system_temp.yellow) {
+                return yellow;
+            }
+            return green;
+        case "ram_data_field":
+            //Check the RAM load.
+            var current_ram_load = Math.floor((data[9] / data[10]) * 100);
+            if (current_ram_load > ram_load.red) { return red; }
+            if (current_ram_load > ram_load.yellow) { return yellow; }
+            return green;
+        case "cpu_data_field":
+            //Check the CPU load and temperature, and take the worst outcome.
+            if (data[11] > system_load.red || data[12] > system_temp.red) {
+                return red;
+            }
+            if (data[11] > system_load.yellow || data[12] > system_temp.yellow) {
+                return yellow;
+            }
+            return green;
+        default:
+            return red;
+    }
+    
+}
+
+function dataToAverageColour() {
+    var colour_value = 0;
+    colour_value += greens;
+    colour_value += yellows * 2;
+    colour_value += reds * 4;
+
+    if (colour_value < average.yellow) { return green; }
+    if (colour_value < average.red) { return yellow; }
+    return red;
+}
+
+//Fill text fields using provided data.
+function dataToText(data, current_element) {
+    switch (current_element) {
+        case "battery_data_field":
+            if (data[3] == "Charging") {
+                return ("Battery - charging at " + data[2] + "%");
+            }
+            return ("Battery - draining at " + data[2] + "%");
+        case "storage_data_field":
+            return ("Storage - using " + data[4] + "GB of " + data[5]);
+        case "fan_data_field":
+            return ("Fan - " + data[6] + "RPM");
+        case "gpu_data_field":
+            return ("GPU - " + data[7] + "% at " + data[8] + " degrees")
+        case "ram_data_field":
+            return ("RAM - using " + data[9] + " GB of " + data[10] + "GB");
+        case "cpu_data_field":
+            return ("CPU - " + data[10] + "% at " + data[11] + " degrees")
     }
 }
 
@@ -121,28 +290,12 @@ function getNewColour() {
         default:
             return "ffffff";
 
+        
+
     }
 }
 
-async function interpretSystemData() {
-    data = getJsonData()
 
-    //Arbitrary baseline colour thresholds.
-    system_temp = {"yellow": 60, "red": 80};    //Degrees.
-    system_load = {"yellow": 70, "red": 90};    //Percent.
-    ram_load = {"yellow": 70, "red": 90};       //Percent.
-    fan_speed = {"yellow": 3000, "red": 5000};  //RPM.
-    storage_usage = {"yellow": 75, "red": 90};  //Percent.
-
-    if (data == null) {
-        console.error("No data read from file");
-        return null;
-    }
-
-    //
-
-
-}
 
 //Read data from /data/data.json using "data_path".
 async function getJsonData() {
@@ -202,9 +355,9 @@ function getDefaultCardHtml() {
 
     <!--Data card right-->
     <div class="data_card_right" id="right">
-        <div class="uptime_data_field">
+        <div class="battery_data_field">
             <img src="../../ui_assets/inverted_assets/data_field.svg" style="background-color: 1ac095;" class="data_field_svg" id="uptime_field_svg" alt="Uptime Field">
-            <p id="uptime_text" class="data_field_paragraph">This is a test</p>
+            <p id="battery_text" class="data_field_paragraph">This is a test</p>
         </div>
 
         <div class="storage_data_field">
