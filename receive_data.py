@@ -6,7 +6,6 @@ def data_handler():
     data = ""   
     with open('data/data.json') as file:
         data = json.load(file)
-        print(data)
 
         data[0]["battery_charge"] = randint(1, 100)
         data[0]["disk_space_used"] = randint(1, 1000)

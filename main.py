@@ -14,14 +14,9 @@ def start_server():
 
 start_server()
 
-counter = 0
-while True:
-    counter += 1
-    sleep(1)
-    receive_data.data_handler()
 
-    if counter > 100:
-        break
+while True:
+    receive_data.data_handler()
 
         
     

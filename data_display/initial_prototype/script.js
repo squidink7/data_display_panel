@@ -65,7 +65,7 @@ var yellows = 0;
 var reds = 0;
 
 //Colour thresholds for icons that require average values.
-const average = {"yellow": 8, "red": 16};    
+const average = {"yellow": 5, "red": 10};    
 
 //Update the colours and HTML content of data cards based on provided data.
 function updateCardData(card_data) {
